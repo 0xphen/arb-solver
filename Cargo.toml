@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "crates/common",
-    "crates/core",
-    # "crates/pipeline"
+    "crates/core", 
+    "crates/perf-bench",
 ]
 
 resolver = "2"
