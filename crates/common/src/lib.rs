@@ -1,3 +1,3 @@
 pub mod error;
-pub mod numeric;
+pub mod numeric_kernel;
 pub mod types;
