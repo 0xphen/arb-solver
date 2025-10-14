@@ -1,14 +1,18 @@
 pub mod error;
 pub mod producer;
+pub mod searcher;
 pub mod simulator;
 pub mod types;
 pub mod writer;
+pub mod config;
 
 use arb_solver_core::GraphCSR;
 use std::sync::Arc;
 use tokio::sync::{RwLock, mpsc, watch};
 
+use arb_solver_core::solver::SPFASolver;
 use producer::Producer;
+use searcher::ArbSearcher;
 use simulator::SimulatorStreamer;
 use writer::Writer;
 
@@ -31,11 +35,16 @@ async fn main() {
     let (_shutdown_tx, shutdown_rx) = watch::channel(());
     let writer = Writer::new(Arc::clone(&shared_graph), receiver, shutdown_rx, 50);
 
+    let searcher = ArbSearcher::new(Arc::clone(&shared_graph), 1, SPFASolver);
+
     // Spawn the tasks
     let producer_handle = tokio::spawn(producer.run(sender));
+
     let writer_handle = tokio::spawn(writer.spawn_task());
 
-    let _ = tokio::join!(producer_handle, writer_handle);
+    let searcher_handle = tokio::spawn(async move { searcher.seacrh_for_arbs().await });
+
+    let _ = tokio::join!(producer_handle, writer_handle, searcher_handle);
 
     println!("Pipeline shut down.");
 }

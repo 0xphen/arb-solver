@@ -1,6 +1,9 @@
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tokio::sync::mpsc::Sender;
 
 use super::error::Error;
+use arb_solver_core::GraphCSR;
 use common::types::Edge;
 
 /// A trait defining the contract for any source that generates and streams updates
@@ -15,3 +18,5 @@ use common::types::Edge;
 pub trait UpdateStreamer: Send + Sync + 'static {
     async fn run_stream(self, sender: Sender<Vec<Edge>>) -> Result<(), Error>;
 }
+
+pub type SharedGraph = Arc<RwLock<GraphCSR>>;

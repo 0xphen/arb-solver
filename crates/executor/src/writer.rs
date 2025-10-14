@@ -1,15 +1,15 @@
-use std::sync::Arc;
 use tokio::select;
+use tokio::sync::mpsc::Receiver;
 use tokio::sync::watch;
-use tokio::sync::{RwLock, mpsc::Receiver};
 
 use super::error::Error;
-use arb_solver_core::csr::{AddEdgeResult, GraphCSR};
+use super::types::SharedGraph;
+use arb_solver_core::csr::AddEdgeResult;
 use common::types::Edge;
 
 /// Async consumer that applies edge updates to the shared graph.
 pub struct Writer {
-    graph: Arc<RwLock<GraphCSR>>,
+    graph: SharedGraph,
     receiver: Receiver<Vec<Edge>>,
     batch_buffer: Vec<Edge>,
     batch_capacity: usize,
@@ -18,7 +18,7 @@ pub struct Writer {
 
 impl Writer {
     pub fn new(
-        graph: Arc<RwLock<GraphCSR>>,
+        graph: SharedGraph,
         receiver: Receiver<Vec<Edge>>,
         shutdown: watch::Receiver<()>,
         batch_capacity: usize,

@@ -1,0 +1,9 @@
+[searcher]
+interval_seconds = 10
+
+[simulator]
+total_nodes = 100
+batch_size = 50
+simulation_interval_ms = 100
+rate_fluctuation_bps = 0.5   # Corresponds to 0.000005
+rebuild_limit = 500
