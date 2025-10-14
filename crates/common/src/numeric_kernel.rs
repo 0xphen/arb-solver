@@ -62,8 +62,9 @@ mod numerical_kernel_tests {
         assert_approx_eq(result, 1.9500);
 
         // Test value that must be rounded: 1.00023 -> 1.0002
+        // Product is 1.000230013
         let precise_a = 1.0001;
-        let precise_b = 1.00013; // Product is 1.000230013
+        let precise_b = 1.00013;
         let result = log_mul_eps(1.0, precise_a, precise_b, 1e-12, MIN_R, MAX_R, QUANTUM);
         assert_approx_eq(result, 1.0002);
     }
@@ -81,7 +82,6 @@ mod numerical_kernel_tests {
         assert_approx_eq(result, 0.5);
     }
 
-    /// Test tiny eps (no gate effect).
     #[test]
     fn test_tiny_epsilon() {
         let old = 1.0;
