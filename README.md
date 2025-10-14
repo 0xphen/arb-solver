@@ -22,11 +22,13 @@ The project also employs a **Compressed Sparse Row (CSR)** graph representation,
 
 ## 🔨 Build and Usage
 
-### Clone the Repository
+### Clone & Build the Repository
 
 ```bash
 git clone git@github.com:0xphen/arb-solver.git
 cd arb-solver
+
+cargo build
 ```
 
 ---
@@ -87,6 +89,4 @@ Run the executor:
 ```bash
 cargo run --release -p executor -- csv edges.csv
 ```
-
-⚠️ Important: Running the executor in CSV mode requires that [`Config.toml`](crates/executor/Config.toml)
- is properly configured, as this file controls how the executor processes the CSV input.
+ ⚠️ Important: The [`Config.toml`](crates/executor/Config.toml) file configures various aspects of the executor system, including the searcher, writer, simulator, producer, and executor. It controls batch sizes, processing intervals, backpressure behavior, and simulation parameters, making it the central configuration for the system in all modes—including CSV input and simulation.
