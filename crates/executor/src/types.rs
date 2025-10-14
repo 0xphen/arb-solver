@@ -20,3 +20,10 @@ pub trait UpdateStreamer: Send + Sync + 'static {
 }
 
 pub type SharedGraph = Arc<RwLock<GraphCSR>>;
+
+pub type JoinHandleResult = tokio::task::JoinHandle<Result<(), Error>>;
+
+pub enum DataSource {
+    SIM,
+    CSV(String),
+}

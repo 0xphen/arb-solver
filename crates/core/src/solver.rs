@@ -107,7 +107,7 @@ impl GraphSolver for SPFASolver {
     /// - `Ok(Some(cycle))` → Profitable cycle found.
     /// - `Ok(None)` → No negative cycle found.
     /// - `Err(e)` → Error occurred.
-    fn find_negative_cycle(
+    fn find_profitable_cycle(
         &self,
         graph: &GraphCSR,
         source: usize,
@@ -204,7 +204,7 @@ mod spfa_tests {
 
         let solver = SPFASolver;
 
-        let cycle = solver.find_negative_cycle(&graph, 0, 2).unwrap();
+        let cycle = solver.find_profitable_cycle(&graph, 0, 2).unwrap();
         assert!(cycle.is_some());
 
         let cycle = cycle.unwrap();
@@ -218,7 +218,7 @@ mod spfa_tests {
         let graph = build_graph(&mut edges, 4);
         let solver = SPFASolver;
 
-        let cycle = solver.find_negative_cycle(&graph, 0, 4).unwrap();
+        let cycle = solver.find_profitable_cycle(&graph, 0, 4).unwrap();
         assert!(cycle.is_none());
     }
 
@@ -227,7 +227,7 @@ mod spfa_tests {
         let graph = build_graph(&mut [], 1);
         let solver = SPFASolver;
 
-        let cycle = solver.find_negative_cycle(&graph, 0, 1).unwrap();
+        let cycle = solver.find_profitable_cycle(&graph, 0, 1).unwrap();
         assert!(cycle.is_none());
     }
 
@@ -236,7 +236,7 @@ mod spfa_tests {
         let graph = build_graph(&mut [], 0);
         let solver = SPFASolver;
 
-        let result = solver.find_negative_cycle(&graph, 0, 1);
+        let result = solver.find_profitable_cycle(&graph, 0, 1);
         assert!(result.is_err());
     }
 
@@ -251,7 +251,7 @@ mod spfa_tests {
         let graph = build_graph(&mut edges, n);
         let solver = SPFASolver;
 
-        let cycle = solver.find_negative_cycle(&graph, 0, n).unwrap();
+        let cycle = solver.find_profitable_cycle(&graph, 0, n).unwrap();
         assert!(cycle.is_none());
     }
 
@@ -269,7 +269,7 @@ mod spfa_tests {
         let graph = build_graph(&mut edges, n);
 
         let solver = SPFASolver;
-        let cycle = solver.find_negative_cycle(&graph, 0, n + 1).unwrap();
+        let cycle = solver.find_profitable_cycle(&graph, 0, n + 1).unwrap();
         assert!(cycle.is_some());
         let cycle = cycle.unwrap();
         assert!(cycle.log_rate_sum < 0.0);
@@ -294,7 +294,7 @@ mod spfa_tests {
         let solver = SPFASolver;
 
         let cycle_option = solver
-            .find_negative_cycle(&graph, 0, 5)
+            .find_profitable_cycle(&graph, 0, 5)
             .expect("SPFA execution returned an unexpected error.");
 
         // Ensure the profitable cycle was found (cycle_option is Some).
@@ -344,7 +344,7 @@ mod spfa_tests {
         // We only assert the existence of the profitable cycle (Component 2).
 
         // Check if the overall graph contains a negative cycle (Component 2).
-        let cycle_option = solver.find_negative_cycle(&graph, 0, 4).unwrap();
+        let cycle_option = solver.find_profitable_cycle(&graph, 0, 4).unwrap();
 
         assert!(
             cycle_option.is_some(),
@@ -383,7 +383,7 @@ mod spfa_tests {
         let graph = build_graph(&mut edges, n);
         let solver = SPFASolver;
 
-        let cycle_option = solver.find_negative_cycle(&graph, n - 1, n).unwrap();
+        let cycle_option = solver.find_profitable_cycle(&graph, n - 1, n).unwrap();
 
         assert!(
             cycle_option.is_some(),
@@ -414,7 +414,7 @@ mod spfa_tests {
         let solver = SPFASolver;
 
         let cycle_result = solver
-            .find_negative_cycle(&graph, 0, 4)
+            .find_profitable_cycle(&graph, 0, 4)
             .expect("SPFA execution returned an error.");
 
         assert!(

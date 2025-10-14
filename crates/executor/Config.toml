@@ -1,9 +1,17 @@
 [searcher]
-interval_seconds = 10
+interval_seconds = 10  # How often (in seconds) the searcher runs
+
+[writer]
+batch_capacity = 100  # Max number of messages/edges the writer batches before flushing to the graph
 
 [simulator]
-total_nodes = 100
-batch_size = 50
-simulation_interval_ms = 100
-rate_fluctuation_bps = 0.5   # Corresponds to 0.000005
-rebuild_limit = 500
+total_nodes = 100             # Total number of simulated nodes
+batch_size = 50               # Number of nodes processed per batch
+simulation_interval_ms = 100  # Time interval (ms) between simulation steps
+rate_fluctuation_bps = 0.5    # Max fluctuation in rate (bps), 0.5 ≈ 0.000005
+
+[producer]
+batch_size = 100   # Maximum number of individual edges to send per message batch.
+
+[executor]
+buffer_size = 10  # Max items in async channel before producers are backpressured

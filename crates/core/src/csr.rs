@@ -152,6 +152,7 @@ impl GraphCSR {
     ///   until the next rebuild, so there’s a slight delay in graph consistency.
     ///
     /// This design is ideal when edges are added in bursts and immediate consistency is not required.
+    #[allow(dead_code)]
     fn add_edges(&mut self, edges: Vec<Edge>) {
         let size = edges.len();
         self.pending_updates.extend(edges);
@@ -182,6 +183,7 @@ impl GraphCSR {
     /// **WARNING:** This is an internal convenience function. In the two-phase
     /// concurrency model, the external Writer should call `rebuild_with_edges`
     /// instead to prevent excessive lock times.
+    #[allow(dead_code)]
     fn rebuild(&mut self) {
         let new_edges = std::mem::take(&mut self.pending_updates);
 

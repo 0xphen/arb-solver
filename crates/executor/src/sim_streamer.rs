@@ -64,12 +64,17 @@ impl UpdateStreamer for SimulatorStreamer {
                 })
                 .collect();
 
+            let size = updates.len();
+
             // Send batch, exit if receiver has been dropped
-            println!("Producer sent {} updates.", updates.len());
-            if sender.send(updates).await.is_err() {
-                println!("Simulator shutting down: Writer receiver dropped.");
+            if let Err(e) = sender.send(updates).await {
+                eprintln!(
+                    "SimulatorStreamer shutting down: Writer receiver dropped. Error: {}",
+                    e
+                );
                 return Err(Error::ChannelSendFailed);
             }
+            println!("Producer sent {} updates.", size);
         }
     }
 }
@@ -85,7 +90,6 @@ mod tests {
         batch_size: 5,
         simulation_interval_ms: 100,
         rate_fluctuation_bps: 0.5,
-        rebuild_limit: 50,
     };
 
     /// SimulatorStreamer can be created correctly.

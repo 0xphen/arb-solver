@@ -7,7 +7,7 @@ pub trait GraphSolver {
     ///
     /// Returns `Ok(Some(cycle))` if a negative cycle is found,
     /// `Ok(None)` if none exists, or `Err(e)` on failure.
-    fn find_negative_cycle(
+    fn find_profitable_cycle(
         &self,
         graph: &GraphCSR,
         source: usize,

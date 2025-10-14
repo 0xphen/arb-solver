@@ -41,7 +41,7 @@ where
             if graph_snapshot.num_nodes > 1 {
                 println!("Searcher: Starting cycle search on new snapshot...");
 
-                let cycle_result = self.solver.find_negative_cycle(
+                let cycle_result = self.solver.find_profitable_cycle(
                     &graph_snapshot,
                     0,
                     graph_snapshot.num_nodes + 1,
@@ -50,6 +50,7 @@ where
                 match cycle_result {
                     Ok(Some(cycle)) => {
                         println!("Cycle FOUND! Path: {:?}", cycle.path);
+                        println!("CYCLE IS PROFITABLE: {}", cycle.is_profitable());
                     }
                     Ok(None) => {
                         println!("Search complete: No arbitrage opportunities.");

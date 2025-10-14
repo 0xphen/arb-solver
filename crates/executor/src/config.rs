@@ -1,4 +1,4 @@
-use config::{Config as ConfigLoader, ConfigError, Environment, File};
+use config::{Config as ConfigLoader, Environment, File};
 use serde::Deserialize;
 use std::env;
 use std::path::PathBuf;
@@ -11,18 +11,35 @@ pub struct SearcherConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct WriterConfig {
+    pub batch_capacity: usize,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ExecutorConfig {
+    pub buffer_size: usize,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ProducerConfig {
+    pub batch_size: usize,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct SimulatorConfig {
     pub total_nodes: usize,
     pub batch_size: usize,
     pub simulation_interval_ms: u64,
     pub rate_fluctuation_bps: f64,
-    pub rebuild_limit: usize,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     pub searcher: SearcherConfig,
     pub simulator: SimulatorConfig,
+    pub executor: ExecutorConfig,
+    pub writer: WriterConfig,
+    pub producer: ProducerConfig,
 }
 
 /// Loads configuration from a file and environment variables.

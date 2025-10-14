@@ -1,6 +1,4 @@
-use tokio::select;
 use tokio::sync::mpsc::Receiver;
-use tokio::sync::watch;
 
 use super::error::Error;
 use super::types::SharedGraph;
@@ -13,20 +11,13 @@ pub struct Writer {
     receiver: Receiver<Vec<Edge>>,
     batch_buffer: Vec<Edge>,
     batch_capacity: usize,
-    shutdown: watch::Receiver<()>,
 }
 
 impl Writer {
-    pub fn new(
-        graph: SharedGraph,
-        receiver: Receiver<Vec<Edge>>,
-        shutdown: watch::Receiver<()>,
-        batch_capacity: usize,
-    ) -> Self {
+    pub fn new(graph: SharedGraph, receiver: Receiver<Vec<Edge>>, batch_capacity: usize) -> Self {
         Self {
             graph,
             receiver,
-            shutdown,
             batch_capacity,
             batch_buffer: Vec::with_capacity(batch_capacity),
         }
@@ -74,24 +65,18 @@ impl Writer {
         println!("Writer ready.");
 
         loop {
-            select! {
-                updates = self.receiver.recv() => {
-                    match updates {
-                        Some(updates) => {
-                          self.batch_buffer.extend(updates);
-                          if self.batch_buffer.len() >= self.batch_capacity {
-                            self.flush().await?;
-                          }
-                        }
-                        None => {
-                            println!("Receiver closed, shutting down writer.");
-                            break;
-                        }
+            let message_option = self.receiver.recv().await;
+
+            match message_option {
+                Some(updates) => {
+                    self.batch_buffer.extend(updates);
+                    if self.batch_buffer.len() >= self.batch_capacity {
+                        self.flush().await?;
                     }
                 }
 
-                _ = self.shutdown.changed() => {
-                    println!("Shutdown signal received, stopping writer.");
+                None => {
+                    println!("Receiver closed, shutting down writer.");
                     break;
                 }
             }
