@@ -51,6 +51,7 @@ where
                     Ok(Some(cycle)) => {
                         println!("Cycle FOUND! Path: {:?}", cycle.path);
                         println!("CYCLE IS PROFITABLE: {}", cycle.is_profitable());
+                        println!("PROFIT MEASURE: {}", cycle.product_rate());
                     }
                     Ok(None) => {
                         println!("Search complete: No arbitrage opportunities.");
