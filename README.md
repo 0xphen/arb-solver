@@ -87,6 +87,6 @@ Example:
 Run the executor:
 
 ```bash
-cargo run --release -p executor -- csv edges.csv
+cargo run --release -p executor -- csv <path_to_csv_file>
 ```
  ⚠️ Important: The [`Config.toml`](crates/executor/Config.toml) file configures various aspects of the executor system, including the searcher, writer, simulator, producer, and executor. It controls batch sizes, processing intervals, backpressure behavior, and simulation parameters, making it the central configuration for the system in all modes—including CSV input and simulation.
