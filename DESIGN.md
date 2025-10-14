@@ -1,11 +1,3 @@
-# 🧮 arb-solver
-
-`arb-solver` is a **high-performance Rust library** for detecting **profitable arbitrage cycles** in directed weighted graphs. It leverages an **optimized Bellman–Ford variant (SPFA)** for negative cycle detection and uses a **Compressed Sparse Row (CSR)** graph representation for memory and computation efficiency.
-
-This library is ideal for high-throughput applications such as **exchange arbitrage, pricing networks, or currency graphs**, where **fast detection and cycle reconstruction** are crucial.
-
----
-
 ## 🚀 Overview
 
 The solver finds **profitable cycles** (negative cycles in log-space) using the **Shortest Path Faster Algorithm (SPFA)** — an optimized variant of Bellman-Ford.
