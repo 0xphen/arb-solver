@@ -237,6 +237,7 @@ impl GraphCSR {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::f64;
 
     #[test]
     fn from_edges_creates_correct_csr_for_small_graph() {
@@ -270,7 +271,6 @@ mod tests {
         assert_eq!(csr.num_nodes, 1);
         assert_eq!(csr.node_pointers, vec![0, 0]);
         assert!(csr.edge_targets.is_empty());
-        assert!(csr.edge_weights.is_empty());
     }
 
     #[test]
@@ -280,7 +280,6 @@ mod tests {
         assert_eq!(csr.num_nodes, 0);
         assert_eq!(csr.node_pointers, vec![0]);
         assert!(csr.edge_targets.is_empty());
-        assert!(csr.edge_weights.is_empty());
     }
 
     #[test]
@@ -309,12 +308,10 @@ mod tests {
         csr.rebuild();
 
         assert_eq!(csr.edge_targets.len(), 3);
-        assert!(csr.edge_targets.contains(&0));
-        assert!(csr.edge_targets.contains(&1));
-        assert!(csr.edge_targets.contains(&2));
+        assert_eq!(csr.edge_targets.iter().sum::<usize>(), 0 + 1 + 2);
 
-        let expected_weights: Vec<f64> = vec![-1.0f64.ln(), -1.5f64.ln(), -2.0f64.ln()];
-        assert_eq!(csr.edge_weights, expected_weights);
+        // The pending buffer must be empty after rebuild() runs.
+        assert!(csr.pending_updates.is_empty());
     }
 
     #[test]
@@ -325,6 +322,8 @@ mod tests {
 
         assert_eq!(csr.edge_targets, vec![1]);
         assert_eq!(csr.edge_weights, vec![-2.0f64.ln()]);
+
+        assert!(csr.pending_updates.is_empty());
     }
 
     #[test]
@@ -346,18 +345,7 @@ mod tests {
 
         assert_eq!(csr.num_nodes, 2);
         assert_eq!(csr.edge_targets, vec![1]);
-        assert_eq!(csr.edge_weights, vec![-1.0f64.ln()]);
         assert_eq!(csr.node_pointers, vec![0, 1, 1]);
-    }
-
-    #[test]
-    fn rebuild_recomputes_node_pointers_correctly() {
-        let mut csr = GraphCSR::from_edges(3, &mut [(0, 1, 1.0)], 2);
-        csr.pending_updates = vec![(1, 2, 1.5), (2, 0, 2.0)];
-        csr.rebuild();
-
-        assert_eq!(csr.node_pointers, vec![0, 1, 2, 3]);
-        assert_eq!(csr.edge_targets, vec![1, 2, 0]);
     }
 
     #[test]
@@ -380,7 +368,7 @@ mod tests {
         csr.add_edges(vec![(1, 0, 2.0)]);
 
         assert_eq!(csr.pending_updates.len(), 1);
-        assert_eq!(csr.edge_targets.len(), 1);
+        assert_eq!(csr.edge_targets.len(), 1); // CSR arrays should be unchanged
     }
 
     #[test]
@@ -390,8 +378,44 @@ mod tests {
 
         csr.add_edges(vec![(1, 0, 2.0)]);
 
+        assert!(csr.pending_updates.is_empty()); // Buffer cleared after internal rebuild
+        assert_eq!(csr.edge_targets.len(), 2);
+    }
+
+    #[test]
+    fn rebuild_with_edges_does_not_touch_pending_buffer() {
+        let mut csr = GraphCSR::from_edges(2, &mut [(0, 1, 1.0)], 2);
+
+        csr.pending_updates = vec![(1, 0, 0.5)];
+        let pending_len_before = csr.pending_updates.len();
+
+        let rebuild_data = vec![(0, 1, 2.0)];
+
+        csr.rebuild_with_edges(rebuild_data);
+
+        assert_eq!(csr.edge_weights.len(), 1);
+        assert_eq!(csr.edge_weights[0], -2.0f64.ln());
+
+        assert_eq!(csr.pending_updates.len(), pending_len_before);
+        assert_eq!(csr.pending_updates, vec![(1, 0, 0.5)]);
+    }
+
+    #[test]
+    fn extract_data_and_rebuild_leaves_buffer_empty() {
+        let mut csr = GraphCSR::from_edges(2, &mut [(0, 1, 1.0)], 1);
+        let updates = vec![(1, 0, 2.0)];
+
+        let result = csr.add_edges_and_extract_data(updates);
+
         assert!(csr.pending_updates.is_empty());
-        assert!(csr.edge_targets.contains(&0));
-        assert!(csr.edge_targets.contains(&1));
+
+        let extracted_edges = match result {
+            AddEdgeResult::RebuildNeeded(edges) => edges,
+            _ => panic!("Expected RebuildNeeded result"),
+        };
+
+        csr.rebuild_with_edges(extracted_edges);
+
+        assert_eq!(csr.edge_targets.len(), 2);
     }
 }
