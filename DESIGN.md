@@ -17,7 +17,7 @@ A **profitable cycle** (∏ rᵢ > 1) becomes a **negative cycle** in log-space 
 
 ---
 
-## 🧠 Core Components
+## Core Components
 
 ### 1. Graph Representation (CSR)
 
