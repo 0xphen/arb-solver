@@ -1,4 +1,4 @@
-## 🚀 Overview
+## Overview
 
 The solver finds **profitable cycles** (negative cycles in log-space) using the **Shortest Path Faster Algorithm (SPFA)** — an optimized variant of Bellman-Ford.
 
