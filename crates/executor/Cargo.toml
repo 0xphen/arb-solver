@@ -1,0 +1,12 @@
+[package]
+name = "executor"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+common = { path = "../common" }
+arb_solver_core = { path = "../core" }
+tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+async-trait = "0.1.89"
+rand = { version = "0.9", features = ["std", "small_rng"] }
+thiserror = "2.0.17"

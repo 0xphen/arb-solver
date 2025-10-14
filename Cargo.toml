@@ -3,6 +3,7 @@ members = [
     "crates/common",
     "crates/core", 
     "crates/perf-bench",
+    "crates/executor"
 ]
 
 resolver = "2"
