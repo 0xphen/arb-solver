@@ -29,7 +29,7 @@ async fn main() {
     let producer = Producer::new(sim);
 
     let (_shutdown_tx, shutdown_rx) = watch::channel(());
-    let writer = Writer::new(Arc::clone(&shared_graph), receiver, shutdown_rx);
+    let writer = Writer::new(Arc::clone(&shared_graph), receiver, shutdown_rx, 50);
 
     // Spawn the tasks
     let producer_handle = tokio::spawn(producer.run(sender));

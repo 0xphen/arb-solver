@@ -1,6 +1,11 @@
 use common::error::Error;
 use common::types::Edge;
 
+pub enum AddEdgeResult {
+    Success,
+    RebuildNeeded(Vec<Edge>),
+}
+
 /// Graph in Compressed Sparse Row (CSR) format for fast graph traversal.
 ///
 /// CSR format stores outgoing edges of each node contiguously in memory:
@@ -147,7 +152,7 @@ impl GraphCSR {
     ///   until the next rebuild, so there’s a slight delay in graph consistency.
     ///
     /// This design is ideal when edges are added in bursts and immediate consistency is not required.
-    pub fn add_edges(&mut self, edges: Vec<Edge>) {
+    fn add_edges(&mut self, edges: Vec<Edge>) {
         let size = edges.len();
         self.pending_updates.extend(edges);
         println!("{} edges added to graph pending buffer", size);
@@ -158,17 +163,40 @@ impl GraphCSR {
         }
     }
 
-    /// Fully rebuild the CSR structure.
+    /// Attempts to add a batch of new edges to the internal buffer.
+    /// If the buffer limit is reached, it atomically extracts (via O(1) swap)
+    /// the full accumulated edge list and signals that a rebuild is required.
+    pub fn add_edges_and_extract_data(&mut self, edges: Vec<Edge>) -> AddEdgeResult {
+        self.pending_updates.extend(edges);
+
+        if self.pending_updates.len() >= self.rebuild_limit {
+            let edges_to_rebuild = std::mem::take(&mut self.pending_updates);
+
+            return AddEdgeResult::RebuildNeeded(edges_to_rebuild);
+        }
+        AddEdgeResult::Success
+    }
+
+    /// Initiates a full, in-place CSR rebuild using the *pending updates* buffer.
     ///
-    /// Steps:
-    /// 1. Extract existing edges from CSR (convert -ln(rate) -> rate)
-    /// 2. Append pending updates
-    /// 3. Sort and deduplicate by `(src, dst)`, keeping the most recent
-    /// 4. Recompute node count if new nodes are introduced
-    /// 5. Rebuild CSR arrays using `build_csr_from_edges`
-    pub fn rebuild(&mut self) {
+    /// **WARNING:** This is an internal convenience function. In the two-phase
+    /// concurrency model, the external Writer should call `rebuild_with_edges`
+    /// instead to prevent excessive lock times.
+    fn rebuild(&mut self) {
+        let new_edges = std::mem::take(&mut self.pending_updates);
+
+        self.rebuild_with_edges(new_edges)
+    }
+
+    /// Fully rebuilds the CSR structure by incorporating a new set of edges.
+    ///
+    /// This is the **public interface** for the Writer's Phase 2 commit.
+    /// Steps involve extracting existing CSR edges, merging them with `new_edges`,
+    /// sorting/deduplicating, recomputing the node count, and committing the
+    /// new CSR arrays. The cost is high (O(E log E)).
+    pub fn rebuild_with_edges(&mut self, new_edges: Vec<Edge>) {
         let mut edges: Vec<(usize, usize, f64)> =
-            Vec::with_capacity(self.edge_targets.len() + self.pending_updates.len());
+            Vec::with_capacity(self.edge_targets.len() + new_edges.len());
 
         // Extract existing edges
         for src in 0..self.num_nodes {
@@ -181,7 +209,8 @@ impl GraphCSR {
             }
         }
 
-        edges.append(&mut self.pending_updates);
+        let mut new_edges = new_edges;
+        edges.append(&mut new_edges);
 
         //Sort and deduplicate by (src, dst)
         edges.sort_by_key(|&(src, dst, _)| (src, dst));
