@@ -21,8 +21,7 @@ impl SPFASolver {
     ///
     /// # Arguments
     /// * `start` - Node flagged by SPFA as part of a potential negative cycle.
-    /// * `pred_edge_idx` - Array of optional CSR edge indices representing the predecessor
-    ///                     edge for each node (from SPFA relaxations).
+    /// * `pred_edge_idx` - Array of optional CSR edge indices representing the predecessor edge for each node (from SPFA relaxations).
     /// * `graph` - The graph in CSR format, containing edge targets, weights, and source mapping.
     ///
     /// # Returns

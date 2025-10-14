@@ -70,7 +70,7 @@ proptest! {
             if from < num_nodes { has_edges[from] = true; }
         }
 
-        for i in 0..num_nodes {
+        for (i, _item) in has_edges.iter().enumerate().take(num_nodes) {
             if !has_edges[i] {
                 prop_assert_eq!(csr.node_pointers[i], csr.node_pointers[i+1]);
             }

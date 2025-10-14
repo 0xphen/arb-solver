@@ -310,7 +310,7 @@ mod tests {
         csr.rebuild();
 
         assert_eq!(csr.edge_targets.len(), 3);
-        assert_eq!(csr.edge_targets.iter().sum::<usize>(), 0 + 1 + 2);
+        assert_eq!(csr.edge_targets.iter().sum::<usize>(), 1 + 2);
 
         // The pending buffer must be empty after rebuild() runs.
         assert!(csr.pending_updates.is_empty());
