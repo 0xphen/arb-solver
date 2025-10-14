@@ -10,4 +10,5 @@ tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread", "sync", "
 async-trait = "0.1.89"
 rand = { version = "0.9", features = ["std", "small_rng"] }
 thiserror = "2.0.17"
-serde = "1.0.228"
+serde = { version = "1.0", features = ["derive"] }
+config = "0.15.18"

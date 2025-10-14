@@ -4,15 +4,10 @@ use rand::{Rng, SeedableRng};
 use tokio::sync::mpsc::Sender;
 use tokio::time::{self, Duration};
 
+use super::config::SimulatorConfig;
 use super::error::Error;
 use super::types::UpdateStreamer;
 use common::types::Edge;
-
-/// Interval between simulation updates in milliseconds.
-const SIMULATION_INTERVAL_MS: u64 = 100;
-
-/// Maximum fluctuation applied to edge rates (0.5 bps).
-const RATE_FLUCTUATION: f64 = 0.000005;
 
 /// Produces synthetic edge updates for simulation purposes.
 ///
@@ -22,6 +17,19 @@ const RATE_FLUCTUATION: f64 = 0.000005;
 pub struct SimulatorStreamer {
     pub total_nodes: usize, // total nodes in the network
     pub batch_size: usize,  // number of updates per batch
+    pub config: SimulatorConfig,
+}
+
+impl SimulatorStreamer {
+    pub fn new(mut config: SimulatorConfig) -> Self {
+        config.rate_fluctuation_bps /= 100000.0;
+
+        SimulatorStreamer {
+            total_nodes: config.total_nodes,
+            batch_size: config.batch_size,
+            config,
+        }
+    }
 }
 
 #[async_trait]
@@ -33,11 +41,12 @@ impl UpdateStreamer for SimulatorStreamer {
     /// naturally via awaiting on `sender.send()`. Exits gracefully
     /// if the receiver is dropped.
     async fn run_stream(self, sender: Sender<Vec<Edge>>) -> Result<(), Error> {
-        let mut interval = time::interval(Duration::from_millis(SIMULATION_INTERVAL_MS));
+        let mut interval =
+            time::interval(Duration::from_millis(self.config.simulation_interval_ms));
 
         let mut rng: SmallRng = SmallRng::from_os_rng();
 
-        let rate_range = -RATE_FLUCTUATION..=RATE_FLUCTUATION;
+        let rate_range = -self.config.rate_fluctuation_bps..=self.config.rate_fluctuation_bps;
         let node_range = 0..self.total_nodes;
 
         loop {
@@ -71,12 +80,21 @@ mod tests {
     use tokio::sync::mpsc;
     use tokio::time::{Duration, timeout};
 
+    const SIM_CONFIG_MOCK: SimulatorConfig = SimulatorConfig {
+        total_nodes: 10,
+        batch_size: 5,
+        simulation_interval_ms: 100,
+        rate_fluctuation_bps: 0.5,
+        rebuild_limit: 50,
+    };
+
     /// SimulatorStreamer can be created correctly.
     #[test]
     fn test_simulator_creation() {
         let sim = SimulatorStreamer {
             total_nodes: 10,
             batch_size: 5,
+            config: SIM_CONFIG_MOCK,
         };
         assert_eq!(sim.total_nodes, 10);
         assert_eq!(sim.batch_size, 5);
@@ -88,6 +106,7 @@ mod tests {
         let sim = SimulatorStreamer {
             total_nodes: 10,
             batch_size: 5,
+            config: SIM_CONFIG_MOCK,
         };
 
         let (tx, mut rx) = mpsc::channel(10);
@@ -112,6 +131,7 @@ mod tests {
         let sim = SimulatorStreamer {
             total_nodes: 10,
             batch_size: 50,
+            config: SIM_CONFIG_MOCK,
         };
 
         let (tx, mut rx) = mpsc::channel(10);
@@ -129,7 +149,9 @@ mod tests {
             assert!(u < 10, "from node out of bounds");
             assert!(v < 10, "to node out of bounds");
             assert!(
-                w >= 1.0 - RATE_FLUCTUATION && w <= 1.0 + RATE_FLUCTUATION,
+                (1.0 - SIM_CONFIG_MOCK.rate_fluctuation_bps
+                    ..=1.0 + SIM_CONFIG_MOCK.rate_fluctuation_bps)
+                    .contains(&w),
                 "rate out of bounds"
             );
         }

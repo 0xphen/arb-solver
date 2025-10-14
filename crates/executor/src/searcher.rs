@@ -1,9 +1,7 @@
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use tokio::time::{self, Duration};
 
 use super::{error::Error, types::SharedGraph};
-use arb_solver_core::{GraphCSR, traits::GraphSolver};
+use arb_solver_core::traits::GraphSolver;
 
 pub struct ArbSearcher<S> {
     solver: S,

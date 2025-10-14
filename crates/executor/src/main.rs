@@ -1,16 +1,18 @@
+pub mod config;
 pub mod error;
 pub mod producer;
 pub mod searcher;
 pub mod simulator;
 pub mod types;
 pub mod writer;
-pub mod config;
 
+use ::config::Config;
 use arb_solver_core::GraphCSR;
 use std::sync::Arc;
 use tokio::sync::{RwLock, mpsc, watch};
 
 use arb_solver_core::solver::SPFASolver;
+use config::load_config;
 use producer::Producer;
 use searcher::ArbSearcher;
 use simulator::SimulatorStreamer;
@@ -26,16 +28,20 @@ async fn main() {
     let graph = GraphCSR::from_edges(0, &mut [], 1);
     let shared_graph = Arc::new(RwLock::new(graph));
 
-    let sim = SimulatorStreamer {
-        total_nodes: 100,
-        batch_size: 7,
-    };
+    let config = load_config().expect("Failed to load config");
+
+    let sim = SimulatorStreamer::new(config.simulator);
+
     let producer = Producer::new(sim);
 
     let (_shutdown_tx, shutdown_rx) = watch::channel(());
     let writer = Writer::new(Arc::clone(&shared_graph), receiver, shutdown_rx, 50);
 
-    let searcher = ArbSearcher::new(Arc::clone(&shared_graph), 1, SPFASolver);
+    let searcher = ArbSearcher::new(
+        Arc::clone(&shared_graph),
+        config.searcher.interval_seconds,
+        SPFASolver,
+    );
 
     // Spawn the tasks
     let producer_handle = tokio::spawn(producer.run(sender));

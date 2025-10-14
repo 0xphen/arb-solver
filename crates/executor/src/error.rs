@@ -1,3 +1,4 @@
+use config::ConfigError;
 use thiserror::Error;
 
 use common::error::Error as ArbSolverError;
@@ -9,6 +10,7 @@ pub enum Error {
 
     #[error("Graph processing error: {0}")]
     GraphError(#[from] ArbSolverError),
-}
 
-// impl std::error::Error for Error {}
+    #[error("Configuration error: {0}")]
+    ConfigLoadError(String),
+}
