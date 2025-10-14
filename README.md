@@ -88,5 +88,5 @@ Run the executor:
 cargo run --release -p executor -- csv edges.csv
 ```
 
-⚠️ Important: Running the executor in CSV mode requires that [`crates/Config.toml`](crates/Config.toml)
+⚠️ Important: Running the executor in CSV mode requires that [`crates/Config.toml`](crates/executor/Config.toml)
  is properly configured, as this file controls how the executor processes the CSV input.
