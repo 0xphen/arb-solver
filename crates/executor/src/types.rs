@@ -1,6 +1,7 @@
 use tokio::sync::mpsc::Sender;
 
 use super::error::Error;
+use common::types::Edge;
 
 /// A trait defining the contract for any source that generates and streams updates
 /// into the main processing pipeline.
@@ -12,12 +13,5 @@ use super::error::Error;
 /// implementation can be safely executed by the multi-threaded asynchronous runtime (Tokio).
 #[async_trait::async_trait]
 pub trait UpdateStreamer: Send + Sync + 'static {
-    async fn run_stream(self, sender: Sender<Vec<EdgeUpdate>>) -> Result<(), Error>;
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct EdgeUpdate {
-    pub from: usize,   // Source Node ID
-    pub to: usize,     // Target Node ID
-    pub new_rate: f64, // The rate that replaces the old one
+    async fn run_stream(self, sender: Sender<Vec<Edge>>) -> Result<(), Error>;
 }

@@ -1,9 +1,7 @@
 use tokio::sync::mpsc::Sender;
 
-use super::{
-    error::Error,
-    types::{EdgeUpdate, UpdateStreamer},
-};
+use super::{error::Error, types::UpdateStreamer};
+use common::types::Edge;
 
 pub struct Producer<S: UpdateStreamer> {
     streamer: S,
@@ -17,10 +15,8 @@ where
         Producer { streamer }
     }
 
-    pub fn run(
-        self,
-        sender: Sender<Vec<EdgeUpdate>>,
-    ) -> tokio::task::JoinHandle<Result<(), Error>> {
+    pub fn run(self, sender: Sender<Vec<Edge>>) -> tokio::task::JoinHandle<Result<(), Error>> {
+        println!("Producer ready.");
         tokio::spawn(async move { self.streamer.run_stream(sender).await })
     }
 }

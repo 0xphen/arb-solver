@@ -148,8 +148,12 @@ impl GraphCSR {
     ///
     /// This design is ideal when edges are added in bursts and immediate consistency is not required.
     pub fn add_edges(&mut self, edges: Vec<Edge>) {
+        let size = edges.len();
         self.pending_updates.extend(edges);
+        println!("{} edges added to graph pending buffer", size);
+
         if self.pending_updates.len() >= self.rebuild_limit {
+            println!("Graph rebuild limit reached. Re-building CSR");
             self.rebuild();
         }
     }
