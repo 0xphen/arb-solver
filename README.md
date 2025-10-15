@@ -1,6 +1,6 @@
 # 🧮 arb-solver
 
-`arb-solver` is a **Rust engine** for efficiently detecting profitable arbitrage cycles in directed weighted graphs. It uses an **optimized Bellman–Ford variant (SPFA)** for fast negative cycle detection, essential for finding arbitrage opportunities where the product of edge weights (rates) exceeds one.
+`arb-solver` is a **Rust engine** for efficiently detecting profitable arbitrage cycles in directed weighted graphs. It uses an **optimized Bellman–Ford variant (SPFA)** for fast negative cycle detection, essential for finding arbitrage opportunities where the product of edge weights (rates) exceeds one (∏ rᵢ > 1).
 
 The project also employs a **Compressed Sparse Row (CSR)** graph representation, ensuring memory and computational efficiency.
 
