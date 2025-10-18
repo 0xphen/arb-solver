@@ -1,6 +1,63 @@
+//! # Numerical Kernel: Log-Space Multiplicative Update with Stability Controls
+//!
+//! This module implements a **numerically stable core kernel** for performing constrained
+//! multiplicative updates, crucial for maintaining **reproducibility**, **bounded precision**,
+//! and **numerical stability** in iterative algorithms.
+//!
+//! ---
+//!
+//! ## Goals & Stability
+//!
+//! The primary goal is to perform the multiplication of two factors, `a × b`, on an
+//! existing `old_value`, while enforcing four key stability constraints:
+//!
+//! 1. **Log-Space Stability:**  
+//!    Mitigates cumulative floating-point drift in repeated multiplications by operating
+//!    in log-space: `ln(a) + ln(b) → exp()`.
+//!
+//! 2. **Range Clamping:**  
+//!    Constrains both factors (`a` and `b`) to a safe dynamic range `[min_r, max_r]` before calculation.
+//!
+//! 3. **Precision Quantization:**  
+//!    Enforces deterministic rounding by snapping the final result to a discrete resolution
+//!    defined by `quantum`, improving reproducibility across runs.
+//!
+//! 4. **Epsilon Gating (Idempotence):**  
+//!    Prevents committing negligible updates when the computed change from `old_value`
+//!    is smaller than a tolerance threshold `eps`, ensuring stable convergence without jitter.
+//!
+//! ---
+//!
+//! ## Core Mechanics: The `log_mul_eps` Process
+//!
+//! The update follows a sequential pipeline:
+//!
+//! 1. **Input Clamping:** Apply `min_r` and `max_r` bounds to both `a` and `b`.
+//! 2. **Log-Space Multiplication:** Compute  
+//!    `new_value_raw = exp(ln(a_clamped) + ln(b_clamped))`.
+//! 3. **Quantization:** Round `new_value_raw` to the nearest multiple of `quantum`.  
+//!    `quantized_value = round(new_value_raw / quantum) * quantum`
+//! 4. **Epsilon Gate:** If `|quantized_value - old_value| < eps`,  
+//!    return `old_value` (gate closed, no update).
+//! 5. **Commit:** Otherwise, return `quantized_value` (gate open, update applied).
+//!
+//! ---
+//!
+//! ## Typical Use Cases
+//!
+//! - **Iterative Algorithms:** Numerical kernels, stochastic models, or dynamic simulations.
+//! - **Bounded Precision Systems:** Financial models, physics engines, or control loops
+//!   requiring deterministic rounding and controlled drift.
+//! - **Idempotent Update Loops:** Systems where micro-changes should not accumulate jitter
+//!   across iterations.
+//!
+//! ---
+//!
+//! ## Function
+//! - [`log_mul_eps`]: Core function performing the log-space multiply–quantize–gate operation.
+
 use std::f64;
 
-/// [Task 3] Implements precision clamping, log-space multiplication, and the epsilon gate.
 pub fn log_mul_eps(
     old_value: f64,
     a: f64,
